@@ -19,24 +19,36 @@
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased}
 
-html, body {
+html {
   height: 100%;
+  background: var(--bg);
+}
+body {
+  min-height: 100%;
   width: 100%;
   margin: 0; padding: 0;
-  overflow: hidden;
   font-family: 'Noto Sans Bengali', sans-serif;
   background: var(--bg);
   color: var(--txt);
+  /* FB browser KEY FIX:
+     body overflow visible হলে
+     keyboard খুললে body scroll হয়
+     এবং fixed footer নিচে থাকে */
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* ── APP SHELL ── */
+/* ── APP SHELL ──
+   #app কে full height করা হয়েছে
+   header: position fixed top
+   footer: position fixed bottom (JS দিয়ে bottom set হবে)
+   msgs: header + footer এর মাঝে থাকবে
+*/
 #app {
-  display: flex;
-  flex-direction: column;
+  display: block;
   width: 100%;
-  overflow: hidden;
+  min-height: 100%;
   position: relative;
-  /* height set by JS */
 }
 
 /* ── LOGIN ── */
@@ -60,12 +72,13 @@ html, body {
 
 /* ── HEADER ── */
 #hdr{
-  flex-shrink:0;background:var(--hdr);
+  position:fixed;top:0;left:0;right:0;
+  z-index:100;
+  background:var(--hdr);
   display:flex;align-items:center;gap:10px;
   padding:0 8px 0 14px;height:60px;
   border-bottom:1px solid var(--border);
   padding-top:env(safe-area-inset-top);
-  position:relative;z-index:10;
 }
 .av-wrap{position:relative;flex-shrink:0}
 .av{width:42px;height:42px;border-radius:50%;background:var(--green-dk);display:flex;align-items:center;justify-content:center;font-size:22px;border:2px solid transparent;transition:border-color .3s}
@@ -77,19 +90,6 @@ html, body {
 .hdr-status{font-size:11.5px;margin-top:1px;display:flex;align-items:center;gap:4px;transition:color .3s}
 .hdr-status.online{color:#4ade80}.hdr-status.offline{color:var(--txt2)}.hdr-status.typing-status{color:var(--green)}
 
-/* Unread badge in header — now on bell */
-#hdr-unread{display:none!important}/* legacy, replaced by bell badge */
-#bell-badge{
-  position:absolute;top:-2px;right:-2px;
-  background:var(--danger);color:#fff;
-  font-size:10px;font-weight:700;
-  min-width:17px;height:17px;border-radius:9px;
-  padding:0 4px;display:none;
-  align-items:center;justify-content:center;
-  pointer-events:none;
-  animation:badgePop .2s cubic-bezier(.34,1.56,.64,1);
-}
-#bell-badge.on{display:flex}
 @keyframes badgePop{from{transform:scale(0)}to{transform:scale(1)}}
 
 #online-badge{background:rgba(74,222,128,.15);border:1px solid rgba(74,222,128,.3);color:#4ade80;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;flex-shrink:0;display:none}
@@ -102,18 +102,19 @@ html, body {
 
 /* ── MESSAGES ── */
 #msgs{
-  flex: 1 1 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-  padding: 8px 10px 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  will-change: scroll-position;
-  /* CRITICAL: min-height:0 allows flex shrinking when keyboard appears */
-  min-height: 0;
+  position:fixed;
+  top:60px; /* header height */
+  left:0;right:0;
+  /* bottom set by JS = footer height */
+  bottom:62px;
+  overflow-y:auto;
+  overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding:8px 10px 6px;
+  display:flex;
+  flex-direction:column;
+  gap:1px;
 }
 #msgs::-webkit-scrollbar{width:3px}
 #msgs::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
@@ -238,11 +239,7 @@ html, body {
 #ctx-backdrop.on{display:block}
 
 /* ── EDIT BANNER ── */
-#edit-banner{
-  flex-shrink:0;background:rgba(37,211,102,.1);
-  padding:8px 14px;display:none;align-items:center;gap:10px;
-  border-top:1px solid rgba(37,211,102,.2);
-}
+#edit-banner{position:fixed;left:0;right:0;bottom:62px;z-index:98;background:rgba(37,211,102,.1);padding:8px 14px;display:none;align-items:center;gap:10px;border-top:1px solid rgba(37,211,102,.2);}
 #edit-banner.on{display:flex}
 .eb-inner{flex:1;border-left:3px solid var(--green);padding:3px 10px;font-size:12px;min-width:0}
 .eb-label{font-size:10px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
@@ -250,7 +247,7 @@ html, body {
 .eb-x{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--txt2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
 /* ── REPLY BANNER ── */
-#rbanner{flex-shrink:0;background:var(--inp-bg);padding:8px 14px;display:none;align-items:center;gap:10px;border-top:1px solid var(--border)}
+#rbanner{position:fixed;left:0;right:0;bottom:62px;z-index:98;background:var(--inp-bg);padding:8px 14px;display:none;align-items:center;gap:10px;border-top:1px solid var(--border)}
 #rbanner.on{display:flex}
 .rb-inner{flex:1;border-left:3px solid var(--green);padding:3px 10px;font-size:12px;min-width:0}
 .rb-name{font-weight:700;color:var(--green);margin-bottom:2px}
@@ -258,49 +255,31 @@ html, body {
 .rb-x{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--txt2);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 
 /* ── IMAGE PREVIEW ── */
-#imgprev{flex-shrink:0;background:var(--inp-bg);border-top:1px solid var(--border);padding:10px 14px;display:none;align-items:center;gap:12px}
+#imgprev{position:fixed;left:0;right:0;bottom:62px;z-index:98;background:var(--inp-bg);border-top:1px solid var(--border);padding:10px 14px;display:none;align-items:center;gap:12px}
 #imgprev.on{display:flex}
 #prev-thumb{width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0}
 .prev-lbl{font-size:13px;color:var(--txt2);flex:1}
 .prev-x{width:32px;height:32px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:var(--txt2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
 .prev-send{width:44px;height:44px;border-radius:50%;border:none;background:var(--green);color:#fff;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(37,211,102,.4)}
-#upbar{flex-shrink:0;background:var(--hdr);padding:5px 16px;font-size:12px;color:var(--green);display:none;align-items:center;gap:6px;border-top:1px solid var(--border)}
+#upbar{position:fixed;left:0;right:0;bottom:62px;z-index:99;background:var(--hdr);padding:5px 16px;font-size:12px;color:var(--green);display:none;align-items:center;gap:6px;border-top:1px solid var(--border)}
 #upbar.on{display:flex}
 
-/* ── VOICE OVERLAY ── */
-#rec-overlay{position:fixed;inset:0;z-index:450;background:rgba(11,20,26,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:24px}
-#rec-overlay.on{display:flex}
-.rec-wave{display:flex;align-items:center;gap:5px;height:60px}
-.rec-wave span{width:5px;border-radius:5px;background:var(--girl);animation:recWave 1s ease-in-out infinite}
-.rec-wave span:nth-child(1){height:20px}.rec-wave span:nth-child(2){height:35px;animation-delay:.1s}.rec-wave span:nth-child(3){height:50px;animation-delay:.2s}.rec-wave span:nth-child(4){height:35px;animation-delay:.3s}.rec-wave span:nth-child(5){height:20px;animation-delay:.4s}.rec-wave span:nth-child(6){height:40px;animation-delay:.15s}.rec-wave span:nth-child(7){height:55px;animation-delay:.25s}.rec-wave span:nth-child(8){height:30px;animation-delay:.35s}
-@keyframes recWave{0%,100%{transform:scaleY(.5);opacity:.5}50%{transform:scaleY(1);opacity:1}}
-#rec-timer{font-size:44px;font-weight:700;color:var(--txt);font-variant-numeric:tabular-nums;letter-spacing:2px}
-#rec-label{font-size:14px;color:var(--txt2)}
-.rec-actions{display:flex;gap:28px;align-items:center}
-.rec-btn{display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;background:none;border:none;color:var(--txt)}
-.rec-btn-ico{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;transition:transform .1s}
-.rec-btn:active .rec-btn-ico{transform:scale(.92)}
-.rec-btn-lbl{font-size:11px;color:var(--txt2);font-family:'Noto Sans Bengali',sans-serif}
-#rec-cancel .rec-btn-ico{background:rgba(229,62,62,.15);font-size:20px}
-#rec-send .rec-btn-ico{background:var(--green);box-shadow:0 4px 16px rgba(37,211,102,.4)}
 
 /* ── FOOTER ── */
 #footer{
-  flex-shrink: 0;
-  background: var(--bg);
-  padding: 6px 8px;
-  padding-bottom: max(8px, env(safe-area-inset-bottom));
-  display: flex;
-  align-items: flex-end;
-  gap: 5px;
-  border-top: 1px solid var(--border);
-  width: 100%;
-  box-sizing: border-box;
-  /* CRITICAL for FB browser: NO position:fixed, stay in normal flex flow */
-  position: relative;
-  z-index: 10;
-  /* Prevent footer from being hidden behind keyboard */
-  flex-grow: 0;
+  position:fixed;
+  left:0;right:0;
+  /* bottom: set by JS when keyboard opens */
+  bottom:0;
+  z-index:100;
+  background:var(--bg);
+  padding:6px 8px;
+  padding-bottom:max(6px, env(safe-area-inset-bottom));
+  display:flex;
+  align-items:flex-end;
+  gap:5px;
+  border-top:1px solid var(--border);
+  box-sizing:border-box;
 }
 .inp-wrap{
   flex:1;min-width:0;/* critical — allows flex child to shrink */
@@ -340,15 +319,6 @@ html, body {
 }
 #send-btn:active{background:var(--green-md);transform:scale(.93)}
 #send-btn.edit-mode{background:var(--boy);box-shadow:0 2px 12px rgba(59,130,246,.35)}
-#voice-btn{
-  width:46px;height:46px;
-  flex-shrink:0;flex-grow:0;
-  border-radius:50%;background:var(--inp-bg);border:none;
-  color:var(--txt2);font-size:21px;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  transition:background .15s,color .15s,transform .1s;
-}
-#voice-btn:active{background:var(--girl);color:#fff;transform:scale(1.1)}
 #file-in{display:none}
 
 /* ── EMOJI KEYBOARD ── */
@@ -413,7 +383,7 @@ html, body {
 @keyframes clearPop{0%{opacity:0;transform:scale(.2) rotate(-20deg)}50%{opacity:1;transform:scale(1.2) rotate(5deg)}75%{transform:scale(.95)}100%{opacity:0;transform:scale(.8)}}
 
 /* ── SCROLL DOWN ── */
-#scrolldn{position:fixed;right:14px;bottom:80px;z-index:100;width:42px;height:42px;border-radius:50%;background:var(--hdr);border:1px solid var(--border);color:var(--txt2);font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.4)}
+#scrolldn{position:fixed;right:14px;bottom:76px;z-index:100;width:42px;height:42px;border-radius:50%;background:var(--hdr);border:1px solid var(--border);color:var(--txt2);font-size:18px;cursor:pointer;display:none;align-items:center;justify-content:center;box-shadow:0 2px 10px rgba(0,0,0,.4)}
 #scrolldn.on{display:flex}
 
 /* ── TOAST ── */
@@ -451,10 +421,6 @@ html, body {
   <div id="hdr-unread"></div>
   <div id="online-badge">🟢 ২ জন</div>
   <div class="hdr-actions">
-    <div class="bell-wrap" style="position:relative">
-      <button class="icon-btn" id="bell-btn" onclick="toggleNotif()" title="নোটিফিকেশন">🔔</button>
-      <div id="bell-badge"></div>
-    </div>
     <button class="icon-btn" onclick="openSettings()">⚙️</button>
   </div>
 </header>
@@ -505,7 +471,6 @@ html, body {
     <input type="file" id="file-in" accept="image/*">
     <textarea id="msg-input" placeholder="মেসেজ লিখো..." rows="1"></textarea>
   </div>
-  <button id="voice-btn" ontouchstart="startRec(event)" onmousedown="startRec(event)">🎤</button>
   <button id="send-btn" onclick="sendMsg()">
     <svg id="send-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:22px;height:22px;display:block">
       <path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -516,25 +481,6 @@ html, body {
 </div>
 </div><!-- #app -->
 
-<!-- VOICE OVERLAY -->
-<div id="rec-overlay">
-  <div class="rec-wave"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-  <div id="rec-timer">০:০০</div>
-  <div id="rec-label">রেকর্ডিং চলছে...</div>
-  <div class="rec-actions">
-    <button class="rec-btn" id="rec-cancel" onclick="cancelRec()">
-      <div class="rec-btn-ico">🗑</div><div class="rec-btn-lbl">বাতিল</div>
-    </button>
-    <button class="rec-btn" id="rec-send" onclick="stopAndSendRec()">
-      <div class="rec-btn-ico">
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:26px;height:26px">
-          <path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-          <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div><div class="rec-btn-lbl">পাঠাও</div>
-    </button>
-  </div>
-</div>
 
 <!-- CONTEXT MENU BACKDROP -->
 <div id="ctx-backdrop" onclick="closeCtxMenu()"></div>
@@ -634,64 +580,120 @@ let editKey=null;
 
 const EMOJIS=["😀","😂","🥰","😍","😎","🤩","😢","😭","😡","🥺","👍","👎","👏","🙌","❤️","💕","💔","🔥","⭐","✨","🎉","🎊","🎁","🍕","☕","🍦","🌸","🌙","☀️","🌈","😘","😋","🤗","😴","🥳","😏","🙃","😇","🤭","😅","💯","🙏","💪","👀","🫶","🤝","✌️","🫠","💀","👻","😤","🤔","🥱","🤑","🤯","🥴","😬","🙄","😌","🤧"];
 
-/* ── KEYBOARD FIX ──
-  সব browser এ কাজ করে।
-  FB browser এ: footer এর position track করে msgs scroll করা হয়।
+/* ── KEYBOARD FIX — FIXED POSITION ARCHITECTURE ──
+
+  Architecture:
+  - header: position:fixed top:0
+  - footer: position:fixed bottom:0  ← JS moves this up when keyboard opens
+  - msgs:   position:fixed top:60px bottom:62px  ← JS adjusts bottom too
+  - banners/upbar: positioned just above footer
+
+  FB browser তে যা হয়:
+  - keyboard খুললে window.innerHeight কমে না
+  - কিন্তু window.pageYOffset বা visualViewport.pageTop বাড়ে
+  - আমরা footer.bottom = keyboard_height করি
+  - তাহলে footer সবসময় keyboard এর উপরে থাকবে
+
+  Detection: focus হলে innerHeight poll করি
+  যদি না কমে, visualViewport.offsetTop দিয়ে detect করি
 */
-const app = document.getElementById("app");
-let _fullH = window.innerHeight;
+const footer  = document.getElementById('footer');
+const msgsEl  = document.getElementById('msgs');
+const HDRH    = 60;  // header height px
+const FTRH    = 62;  // footer height px (approximate)
 
-function setAppH(h){ app.style.height = h + "px"; }
-setAppH(_fullH);
-window.addEventListener("load", ()=>{ _fullH=window.innerHeight; setAppH(_fullH); });
+let _initH    = window.innerHeight;
+let _kbH      = 0;   // detected keyboard height
+let _pollId   = null;
 
-// Standard browsers (Chrome, Safari): visualViewport shrinks on keyboard
+function applyLayout(kbHeight){
+  _kbH = kbHeight;
+  if(footer)  footer.style.bottom  = kbHeight + 'px';
+  if(msgsEl)  msgsEl.style.bottom  = (kbHeight + FTRH) + 'px';
+  // banners above footer
+  document.querySelectorAll('#upbar,#edit-banner,#rbanner,#imgprev').forEach(el=>{
+    el.style.bottom = (kbHeight + FTRH) + 'px';
+  });
+  // scroll msgs to bottom
+  if(msgsEl) msgsEl.scrollTop = msgsEl.scrollHeight;
+}
+
+// Init
+applyLayout(0);
+window.addEventListener('load', ()=>{ _initH = window.innerHeight; applyLayout(0); });
+
+// Standard: visualViewport resize (Chrome, Safari)
 if(window.visualViewport){
-  window.visualViewport.addEventListener("resize", ()=>{
-    setAppH(window.visualViewport.height);
-    bScroll();
+  window.visualViewport.addEventListener('resize', ()=>{
+    const kbH = Math.max(0, _initH - window.visualViewport.height);
+    applyLayout(kbH);
+  },{passive:true});
+  window.visualViewport.addEventListener('scroll', ()=>{
+    const kbH = Math.max(0, window.visualViewport.offsetTop || 0);
+    if(kbH > 0) applyLayout(kbH);
   },{passive:true});
 }
-window.addEventListener("resize", ()=>{
+
+// Fallback: window resize
+window.addEventListener('resize', ()=>{
   const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-  setAppH(h); bScroll();
+  const kbH = Math.max(0, _initH - h);
+  applyLayout(kbH);
 },{passive:true});
 
-function bScroll(){
-  requestAnimationFrame(()=>{ const b=$("msgs"); if(b) b.scrollTop=b.scrollHeight; });
+// FB browser: visualViewport doesn't fire. Poll innerHeight + offsetTop
+function startKbDetect(){
+  clearInterval(_pollId);
+  let attempts = 0;
+  _pollId = setInterval(()=>{
+    attempts++;
+    // Method 1: innerHeight shrinks
+    const ih = window.innerHeight;
+    if(ih < _initH - 100){
+      applyLayout(_initH - ih);
+      if(attempts > 5) clearInterval(_pollId);
+      return;
+    }
+    // Method 2: visualViewport.pageTop / offsetTop (FB browser)
+    if(window.visualViewport){
+      const ot = window.visualViewport.offsetTop || 0;
+      const pt = window.visualViewport.pageTop   || 0;
+      const kbH = Math.max(ot, pt);
+      if(kbH > 50){
+        applyLayout(kbH);
+        if(attempts > 5) clearInterval(_pollId);
+        return;
+      }
+    }
+    // Method 3: document.activeElement.getBoundingClientRect()
+    const active = document.activeElement;
+    if(active && active.id === 'msg-input'){
+      const rect = active.getBoundingClientRect();
+      const screenH = window.innerHeight;
+      if(rect.bottom > screenH - 10){
+        // input is below visible area — keyboard must be covering it
+        const kbH = rect.bottom - screenH + rect.height + 16;
+        if(kbH > 50) applyLayout(kbH);
+      }
+    }
+    if(attempts >= 20) clearInterval(_pollId);
+  }, 100);
 }
 
-// FB browser fix: poll footer position, scroll msgs up if footer hidden
-let _fbTimer = null;
-function onInputFocus(){
-  // Standard fix attempts
-  [100,300,600].forEach(d=>setTimeout(()=>{
-    const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    setAppH(h); bScroll();
-  }, d));
+function stopKbDetect(){
+  clearInterval(_pollId);
+  setTimeout(()=> applyLayout(0), 300);
+}
 
-  // FB browser: watch footer every 80ms and scroll msgs until footer is visible
-  clearInterval(_fbTimer);
-  let attempts = 0;
-  _fbTimer = setInterval(()=>{
-    attempts++;
-    const footer = document.getElementById("footer");
-    if(!footer){ clearInterval(_fbTimer); return; }
-    const fBottom = footer.getBoundingClientRect().bottom;
-    const vBottom = window.visualViewport ? window.visualViewport.height : window.innerHeight;
-    if(fBottom > vBottom + 5){
-      // footer কীবোর্ডের নিচে — msgs scroll করো
-      const msgs = document.getElementById("msgs");
-      if(msgs) msgs.scrollTop += (fBottom - vBottom + 10);
-    }
-    if(attempts > 25) clearInterval(_fbTimer); // 2s পর বন্ধ
-  }, 80);
+function onInputFocus(){
+  _initH = _initH || window.innerHeight; // recapture if needed
+  startKbDetect();
 }
 
 function onInputBlur(){
-  clearInterval(_fbTimer);
-  setTimeout(()=>{ setAppH(_fullH||window.innerHeight); bScroll(); }, 350);
+  stopKbDetect();
 }
+
 
 document.addEventListener("visibilitychange",()=>{
   const v=!document.hidden;
@@ -795,12 +797,6 @@ function setUnread(n){
   else el.classList.remove("on");
 }
 
-window.toggleNotif=()=>{
-  // Clicking bell scrolls to bottom and clears unread
-  goBottom();markSeen();
-  $("bell-btn").style.animation="none";
-  requestAnimationFrame(()=>{ $("bell-btn").style.animation="badgePop .3s ease"; });
-};
 
 function markSeen(){
   if(!me||!allKeys.length)return;
@@ -938,45 +934,6 @@ window.sendImg=async()=>{
   await push(msgsRef,pl);hide("upbar");pendingImg=null;goBottom();
 };
 
-/* VOICE */
-let mediaRec=null,recChunks=[],recInterval=null,recStart=0;
-function bnNum(n){return String(n).replace(/[0-9]/g,d=>"০১২৩৪৫৬৭৮৯"[d]);}
-window.startRec=async(e)=>{
-  if(e)e.preventDefault();if(mediaRec)return;
-  try{
-    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
-    recChunks=[];mediaRec=new MediaRecorder(stream,{mimeType:"audio/webm"});
-    mediaRec.ondataavailable=e=>{if(e.data.size>0)recChunks.push(e.data);};
-    mediaRec.start(100);recStart=Date.now();show("rec-overlay");
-    recInterval=setInterval(()=>{
-      const s=Math.floor((Date.now()-recStart)/1000);
-      $("rec-timer").textContent=bnNum(Math.floor(s/60))+":"+String(s%60).padStart(2,"0");
-    },500);
-  }catch{showToast("❌ মাইক্রোফোন অনুমতি দাও");}
-};
-window.cancelRec=()=>{
-  if(mediaRec){mediaRec.stop();mediaRec.stream.getTracks().forEach(t=>t.stop());mediaRec=null;}
-  clearInterval(recInterval);hide("rec-overlay");recChunks=[];
-};
-window.stopAndSendRec=()=>{
-  if(!mediaRec)return;
-  clearInterval(recInterval);
-  const dur=Math.floor((Date.now()-recStart)/1000);
-  mediaRec.onstop=async()=>{
-    const blob=new Blob(recChunks,{type:"audio/webm"});
-    const reader=new FileReader();
-    reader.onload=async e=>{
-      hide("rec-overlay");show("upbar");
-      const timer=getTimer();
-      const pl={name:me,type:"voice",audio:e.target.result,duration:dur,ts:serverTimestamp(),expiresAt:timer?Date.now()+timer*1000:null};
-      if(replyTo){pl.replyTo=replyTo;cancelReply();}
-      await push(msgsRef,pl);hide("upbar");goBottom();
-    };
-    reader.readAsDataURL(blob);
-    mediaRec.stream.getTracks().forEach(t=>t.stop());mediaRec=null;recChunks=[];
-  };
-  mediaRec.stop();
-};
 
 /* REPLY */
 window.setReply=(key,name,text,type)=>{
